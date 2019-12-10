@@ -7,6 +7,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # grace's username: 22727lpkw7t7zy7p2gicvwvgy
 # nabeel: nabeelornodeal
+# christy - spotify:user:1239606975
 
 # grace
 #clientid = "4f933fc7044d44d58ab19e959b76e243"
@@ -21,7 +22,6 @@ redirect = "http://localhost:8888/callback/"
 # export SPOTIPY_CLIENT_ID='b68e8f328092403f8c07380df2df2351'
 # export SPOTIPY_CLIENT_SECRET='b366d934eff740789e6eea7b402f0f03'
 # export SPOTIPY_REDIRECT_URI='http://localhost:8888/callback/'
-
 
 # class definition
 
@@ -67,7 +67,7 @@ class User:
                 termSplit = inputTerm[i].split('//')
                 songName = termSplit[0]
                 songArtist = termSplit[1]
-
+ 
                 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
                 sp.trace=False
 
@@ -140,7 +140,7 @@ else:
 print('Musicality of top 5 tracks')
 print()
 
-currUser.analyzeMusic('long_term')
+currUser.analyzeMusic('short_term')
 
 
 
