@@ -14,21 +14,24 @@ from spotipy.oauth2 import SpotifyClientCredentials
 #from userdef import User
 
 
+## TODO: FIGURE OUT HOW TO IMPORT USER CLASS SO DONT HAVE TO REPEAT CODE
+
 
 PORT_NUMBER = 8080
-SPOTIPY_CLIENT_ID = '4f933fc7044d44d58ab19e959b76e243'
-SPOTIPY_CLIENT_SECRET = '325c926d068544cda714d024be6f96bd'
-SPOTIPY_REDIRECT_URI = 'http://localhost:8080'
+clientid = '4f933fc7044d44d58ab19e959b76e243'
+secret = '325c926d068544cda714d024be6f96bd'
+redirect = 'http://localhost:8080'
 SCOPE = 'user-library-read'
 CACHE = '.spotipyoauthcache'
 
-sp_oauth = oauth2.SpotifyOAuth( SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET,SPOTIPY_REDIRECT_URI,scope=SCOPE,cache_path=CACHE )
+sp_oauth = oauth2.SpotifyOAuth( clientid, secret,redirect,scope=SCOPE,cache_path=CACHE )
 tracks = {}
 
 @app.route("/")
 def index():
     #print("now im here")
-    return "this is the splash screen"
+    #return "this is the splash screen"
+    return render_template('splash.html')
 
 @app.route('/login')
 def login():
@@ -65,7 +68,7 @@ def success():
 def getTopTracks(results, sp):
 
     #scope = 'user-top-read'
-    #token = util.prompt_for_user_token(results, scope, client_id=SPOTIPY_CLIENT_ID, client_secret=SPOTIPY_CLIENT_SECRET,redirect_uri=SPOTIPY_REDIRECT_URI )
+    #token = util.prompt_for_user_token(results, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect )
     #if token:
         timespan = ['short_term', 'medium_term', 'long_term']
 
@@ -105,8 +108,9 @@ def long():
 
 def analyzeMusic(term, tracks):
 
-    client_credentials_manager = SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID,
-                                                          client_secret=SPOTIPY_CLIENT_SECRET)
+    client_credentials_manager = SpotifyClientCredentials(client_id=clientid,
+                                                          client_secret=secret)
+    #shouldnt be hard coded, should import the User class
     tracks = {'short_term': ['Ball For Me (feat. Nicki Minaj)//Post Malone', 'Press//Cardi B', 'Wow.//Post Malone', '100 Bad Days//AJR', 'Circles//Post Malone'], 'medium_term': ['hot girl bummer//blackbear', 'Ball For Me (feat. Nicki Minaj)//Post Malone', 'Wow.//Post Malone', 'SICKO MODE//Travis Scott', "fuck, i'm lonely (with Anne-Marie) - from “13 Reasons Why: Season 3”//Lauv"], 'long_term': ['Somebody Else//The 1975', 'Vanessa//Lostboycrow', 'Ode to Sleep//Twenty One Pilots', 'PILLOWTALK//ZAYN', 'Car Radio//Twenty One Pilots']}
     print(tracks)
     if ((term != 'short_term') & (term != 'medium_term') & (term != 'long_term')):
