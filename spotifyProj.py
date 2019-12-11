@@ -147,8 +147,10 @@ else:
 print('Musicality of top 5 tracks')
 print()
 
-#currUser.analyzeMusic('short_term') 
-currUser.getRecs('short_term') 
+currUser.analyzeMusic('short_term')
+
+print('Recommended songs')
+currUser.getRecs('short_term')
 
 
 #should show the contents of every playlist owned by a user
