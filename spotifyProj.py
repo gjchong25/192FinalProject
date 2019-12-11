@@ -14,9 +14,12 @@ redirect = "http://localhost:8888/callback/"
 # user class stores top tracks and other important musical info
 class User:
     toptracks = {}
+    topURIs = {}
+    recommendations = []
     def __init__(self, username):
         self.username = username
         self.toptracks = {} # empty dict of top tracks (short, med, or long)
+        self.recommendations = []
 
     def __str__(self):
         stri = ""
@@ -36,11 +39,14 @@ class User:
             results = sp.current_user_top_tracks(time_range=term, limit=5)
             #self.toptracks = results
             tracksList = []
+            uriList = []
             for i, item in enumerate(results['items']):
                 # song//artist -- separate by '//'
                 tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+                uriList.append(item['uri'])
                 print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
             self.toptracks[term] = tracksList
+            self.topURIs[term] = uriList
             print("")
 
     # term can be long, med or short term
@@ -78,9 +84,20 @@ class User:
                     print(json.dumps(feature, indent=4))
                     analysis = sp._get(feature['analysis_url'])
 
+                self.averages = dict()
                 print()
                 print('*****************')
                 print()
+
+    def getRecs(self, timespan):
+        sp = spotipy.Spotify(auth=token)
+        sp.trace = False
+        inputTerm = self.toptracks[timespan]
+        seed = self.topURIs[timespan]
+        k = sp.recommendations(seed_artists=None, seed_genres=None, seed_tracks=seed, limit=10, country=None)
+        for i in range(0, 10):
+            print (k['tracks'][i]['name']+'//'+k['tracks'][i]['artists'][0]['name'])
+            self.recommendations.append(k['tracks'][i]['name']+'//'+k['tracks'][i]['artists'][0]['name'])
 
 client_credentials_manager = SpotifyClientCredentials(client_id=clientid,
                                                       client_secret=secret)
@@ -118,12 +135,11 @@ else:
 print('Musicality of top 5 tracks')
 print()
 
-currUser.analyzeMusic('short_term') 
-
+#currUser.analyzeMusic('short_term') 
+currUser.getRecs('short_term') 
 
 
 #should show the contents of every playlist owned by a user
-
 def show_tracks(tracks):
     for i, item in enumerate(tracks['items']):
         track = item['track']
