@@ -30,14 +30,14 @@ class User:
                 stri += 'short term '
             elif term == 'medium_term':
                 stri += 'medium term '
-            else: 
+            else:
                 stri += 'long term '
             stri += 'tracks are: '
             for i in range(len(self.toptracks[term])- 1):
                 stri += self.toptracks[term][i] + ", "
             stri += "and "
             stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
-            stri += ". \n"
+            stri += ". \n\n"
         return stri
 
     # term should be a list
@@ -47,7 +47,7 @@ class User:
         self.toptracks = dict()
         #timespan can be short term, medium or long or any combination of them
         for term in timespan:
-            print ("term: " + term)
+            #print ("term: " + term)
             results = sp.current_user_top_tracks(time_range=term, limit=5)
             #self.toptracks = results
             tracksList = []
@@ -56,10 +56,10 @@ class User:
                 # song//artist -- separate by '//'
                 tracksList.append(item['name'] + " by " + item['artists'][0]['name'])
                 uriList.append(item['uri'])
-                print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
+                #print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
             self.toptracks[term] = tracksList
             self.topURIs[term] = uriList
-            print("")
+            #print("")
 
     # term can be long, med or short term
     def analyzeMusic(self, term):
@@ -106,7 +106,7 @@ class User:
         sp.trace = False
         inputTerm = self.toptracks[timespan]
         seed = self.topURIs[timespan]
-        k = sp.recommendations(seed_artists=None, seed_genres=None, seed_tracks=seed, limit=10, country=None)
+        k = sp.recommendations(seed_artists=None, seed_genres=None, seed_tracks=seed, limit=25, country=None)
         for i in range(0, 10):
             print (k['tracks'][i]['name']+'//'+k['tracks'][i]['artists'][0]['name'])
             self.recommendations.append(k['tracks'][i]['name']+'//'+k['tracks'][i]['artists'][0]['name'])
@@ -135,7 +135,6 @@ if token:
     #sp.trace = False
     timespan = ['short_term', 'medium_term', 'long_term']
     currUser.getTopTracks(timespan)
-    print('test str method')
     print(str(currUser))
 
 else:
@@ -144,14 +143,20 @@ else:
 
 # find musicality features for top 5 short term songs
 
-print('Musicality of top 5 tracks')
-print()
+#print('Musicality of top 5 tracks')
+#print()
 
-currUser.analyzeMusic('short_term')
+#currUser.analyzeMusic('short_term')
 
 print('Recommended songs')
 currUser.getRecs('short_term')
-
+print ('\n')
+print('Recommended songs - medium term')
+currUser.getRecs('medium_term')
+print ('\n')
+print('Recommended songs - long term')
+currUser.getRecs('long_term')
+print ('\n')
 
 #should show the contents of every playlist owned by a user
 def show_tracks(tracks):

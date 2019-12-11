@@ -54,8 +54,7 @@ def topTracks(userid):
     tracks = toptracks
 
     return toptracks
-
-
+ 
 # homepage
 @app.route('/homepage')
 def homepage():
