@@ -116,11 +116,7 @@ else:
 print('Musicality of top 5 tracks')
 print()
 
-currUser.analyzeMusic('short_term')
-
-print('TESTING STRING FUNC')
-print(str(currUser))
-
+currUser.analyzeMusic('short_term') 
 
 #should show the contents of every playlist owned by a user
 
