@@ -22,11 +22,23 @@ class User:
         self.recommendations = []
 
     def __str__(self):
+        timespan = ['short_term', 'medium_term', 'long_term']
         stri = ""
-        for i in range(len(self.toptracks['short_term'])- 1):
-            stri += self.toptracks['short_term'][i] + ", "
-        stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
-        return "spotify user: " + self.username + ", spotify top tracks: " + stri + ""
+        for term in timespan:
+            stri += "Your Spotify top "
+            if term == 'short_term':
+                stri += 'short term '
+            elif term == 'medium_term':
+                stri += 'medium term '
+            else: 
+                stri += 'long term '
+            stri += 'tracks are: '
+            for i in range(len(self.toptracks[term])- 1):
+                stri += self.toptracks[term][i] + ", "
+            stri += "and "
+            stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
+            stri += ". \n"
+        return stri
 
     # term should be a list
     def getTopTracks(self, timespan):
@@ -42,7 +54,7 @@ class User:
             uriList = []
             for i, item in enumerate(results['items']):
                 # song//artist -- separate by '//'
-                tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+                tracksList.append(item['name'] + " by " + item['artists'][0]['name'])
                 uriList.append(item['uri'])
                 print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
             self.toptracks[term] = tracksList
