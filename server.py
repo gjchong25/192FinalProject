@@ -66,7 +66,10 @@ def homepage():
 # gets dictionary of all top tracks
 @app.route('/alltoptracks/<name>')
 def alltoptracks(name):
-    return topTracks(name)
+    tracks = topTracks(name)
+    return render_template('overalltop.html', name = name, tracks = tracks)
+
+    #return topTracks(name)
 
 # gets short term top tracks for user
 @app.route('/short/<name>')
@@ -87,7 +90,9 @@ def short(name):
             tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
         toptracks[term] = tracksList
     tracks = toptracks
-    return analyzeMusic(toptracks, 'short_term')
+    shorttracks = analyzeMusic(toptracks, 'short_term')
+    return render_template('topsongs.html', name = name, tracks = shorttracks)
+    #return analyzeMusic(toptracks, 'short_term')
 
 # gets medium term top tracks for user
 @app.route('/medium/<name>')
@@ -107,7 +112,9 @@ def medium(name):
             tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
         toptracks[term] = tracksList
     tracks = toptracks
-    return analyzeMusic(toptracks, 'medium_term')
+    #return analyzeMusic(toptracks, 'medium_term')
+    medtracks = analyzeMusic(toptracks, 'medium_term')
+    return render_template('topsongs.html', name = name, tracks = medtracks)
 
 # gets long term top tracks for user
 @app.route('/long/<name>')
@@ -127,7 +134,8 @@ def long(name):
             tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
         toptracks[term] = tracksList
     tracks = toptracks
-    return analyzeMusic(toptracks, 'long_term')
+    longtracks = analyzeMusic(toptracks, 'long_term')
+    return render_template('topsongs.html', name = name, tracks = longtracks)
 
 # function to analyze music characteristics of songs
 def analyzeMusic(toptracks, term):

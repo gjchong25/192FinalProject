@@ -22,11 +22,23 @@ class User:
         self.recommendations = []
 
     def __str__(self):
+        timespan = ['short_term', 'medium_term', 'long_term']
         stri = ""
-        for i in range(len(self.toptracks['short_term'])- 1):
-            stri += self.toptracks['short_term'][i] + ", "
-        stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
-        return "spotify user: " + self.username + ", spotify top tracks: " + stri + ""
+        for term in timespan:
+            stri += "Your Spotify top "
+            if term == 'short_term':
+                stri += 'short term '
+            elif term == 'medium_term':
+                stri += 'medium term '
+            else:
+                stri += 'long term '
+            stri += 'tracks are: '
+            for i in range(len(self.toptracks[term])- 1):
+                stri += self.toptracks[term][i] + ", "
+            stri += "and "
+            stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
+            stri += ". \n"
+        return stri
 
     # term should be a list
     def getTopTracks(self, timespan):
@@ -135,8 +147,10 @@ else:
 print('Musicality of top 5 tracks')
 print()
 
-#currUser.analyzeMusic('short_term') 
-currUser.getRecs('short_term') 
+currUser.analyzeMusic('short_term')
+
+print('Recommended songs')
+currUser.getRecs('short_term')
 
 
 #should show the contents of every playlist owned by a user
