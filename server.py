@@ -1,170 +1,194 @@
-# https://github.com/plamere/spotipy/blob/master/spotipy/util.py
-# http://www.acmesystems.it/python_httpd
-from flask import Flask, jsonify, request, render_template, url_for
-app = Flask(__name__)
-from bottle import route, run, request, redirect
+from flask import Flask, jsonify, request, render_template, url_for, redirect
+import json
+import requests
+from urllib.parse import quote
 import spotipy
 from spotipy import oauth2
 import os
 import sys
-import json
-import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
-#from userdef import User
 
+app = Flask(__name__)
 
-## TODO: FIGURE OUT HOW TO IMPORT USER CLASS SO DONT HAVE TO REPEAT CODE
+#authentication required fields
+clientid = "4f933fc7044d44d58ab19e959b76e243"
+secret = "325c926d068544cda714d024be6f96bd"
+redirect_uri = "http://localhost:8080/callback"
+client_credentials_manager = SpotifyClientCredentials(client_id=clientid,
+                                                      client_secret=secret)
 
+auth_query_parameters = {
+    "response_type": "code",
+    "redirect_uri": redirect_uri,
+    "client_id": clientid
+}
 
-PORT_NUMBER = 8080
-clientid = '4f933fc7044d44d58ab19e959b76e243'
-secret = '325c926d068544cda714d024be6f96bd'
-redirect = 'http://localhost:8080'
-SCOPE = 'user-library-read'
-CACHE = '.spotipyoauthcache'
-
-sp_oauth = oauth2.SpotifyOAuth( clientid, secret,redirect,scope=SCOPE,cache_path=CACHE )
-tracks = {}
-
+# may need to sign into spotify
 @app.route("/")
 def index():
-    #print("now im here")
-    #return "this is the splash screen"
-    return render_template('splash.html')
+    # Authorization
+    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
+    auth_url = "{}/?{}".format("https://accounts.spotify.com/authorize", url_args)
+    return redirect(auth_url)
 
-@app.route('/login')
-def login():
-    return htmlForLoginButton()
+# a side function that gets the users top tracks
+def topTracks(userid):
+    scope = 'user-top-read'
+    token = util.prompt_for_user_token(userid, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect_uri )
 
-@app.route('/success')
-def success():
+    sp = spotipy.Spotify(auth=token)
+    timespan = ['short_term', 'medium_term', 'long_term']
 
-    access_token = ""
+    sp.trace = False
+    #store top short, med and long term tracks in dictionary
+    toptracks = dict()
+    #timespan can be short term, medium or long or any combination of them
+    for term in timespan:
+        results = sp.current_user_top_tracks(time_range=term, limit=5)
+        tracksList = []
+        for i, item in enumerate(results['items']):
+            tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+            #print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
+        toptracks[term] = tracksList
+    tracks = toptracks
 
-    token_info = sp_oauth.get_cached_token()
-
-    if token_info:
-        print("Found cached token!")
-        access_token = token_info['access_token']
-    else:
-        url = request.url
-        code = sp_oauth.parse_response_code(url)
-        if code:
-            print("Found Spotify auth code in Request URL! Trying to get valid access token...")
-            token_info = sp_oauth.get_access_token(code)
-            access_token = token_info['access_token']
-
-    if access_token:
-        print("Access token available! Trying to get user information...")
-        sp = spotipy.Spotify(access_token)
-        results = sp.current_user()
-        #return results['id']
-        return getTopTracks(results['id'], sp) # get username unique id
-
-    else:
-        return htmlForLoginButton()
-
-def getTopTracks(results, sp):
-
-    #scope = 'user-top-read'
-    #token = util.prompt_for_user_token(results, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect )
-    #if token:
-        timespan = ['short_term', 'medium_term', 'long_term']
-
-        #sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        toptracks = dict()
-        #timespan can be short term, medium or long or any combination of them
-        for term in timespan:
-            print ("term: " + term)
-            results = sp.current_user_top_tracks(time_range=term, limit=5)
-            tracksList = []
-            for i, item in enumerate(results['items']):
-                # song//artist -- separate by '//'
-                tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
-                print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
-            toptracks[term] = tracksList
-            print("")
-        tracks = toptracks
-        print('THIS IS TRACKS')
-        print(tracks)
-        return toptracks
-    #else:
-        #return "token didnt work this time"
-
-@app.route('/short_term')
-def short():
-    return analyzeMusic('short_term', tracks)
-
-@app.route('/medium_term')
-def med():
-    return analyzeMusic('medium_term', tracks)
-
-@app.route('/long_term')
-def long():
-    return analyzeMusic('long_term', tracks)
+    return toptracks
 
 
-def analyzeMusic(term, tracks):
+# homepage
+@app.route('/homepage')
+def homepage():
+    user = request.args.get('user')
+    display = request.args.get('display')
+    return render_template('splash.html', name = user, display = display)
 
-    client_credentials_manager = SpotifyClientCredentials(client_id=clientid,
-                                                          client_secret=secret)
-    #shouldnt be hard coded, should import the User class
-    tracks = {'short_term': ['Ball For Me (feat. Nicki Minaj)//Post Malone', 'Press//Cardi B', 'Wow.//Post Malone', '100 Bad Days//AJR', 'Circles//Post Malone'], 'medium_term': ['hot girl bummer//blackbear', 'Ball For Me (feat. Nicki Minaj)//Post Malone', 'Wow.//Post Malone', 'SICKO MODE//Travis Scott', "fuck, i'm lonely (with Anne-Marie) - from “13 Reasons Why: Season 3”//Lauv"], 'long_term': ['Somebody Else//The 1975', 'Vanessa//Lostboycrow', 'Ode to Sleep//Twenty One Pilots', 'PILLOWTALK//ZAYN', 'Car Radio//Twenty One Pilots']}
-    print(tracks)
-    if ((term != 'short_term') & (term != 'medium_term') & (term != 'long_term')):
-        print('Term is not valid')
-        sys.exit()
-    else:
-        inputTerm = tracks[term]
-        dict = {}
-        for i in range(len(inputTerm)):
-            termSplit = inputTerm[i].split('//')
-            songName = termSplit[0]
-            songArtist = termSplit[1]
+# gets dictionary of all top tracks
+@app.route('/alltoptracks/<name>')
+def alltoptracks(name):
+    return topTracks(name)
 
-            sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-            sp.trace=False
+# gets short term top tracks for user
+@app.route('/short/<name>')
+def short(name):
+    scope = 'user-top-read'
+    token = util.prompt_for_user_token(name, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect_uri )
 
-            # results = sp.search(q=artist_name, limit=1)
-            # this finds the song with the artist and song name
-            results = sp.search(q='artist:' + songArtist + ' track:' + songName, type='track', limit = 1)
+    sp = spotipy.Spotify(auth=token)
+    timespan = ['short_term']
 
-            #print(results["tracks"]['items']) --> gives you more info
-            print('Name of Artist: ' + results["tracks"]['items'][0]['artists'][0]['name'])
-            print('Name of Song: ' + results["tracks"]['items'][0]['name'])
-            print('Song URI: ' + results["tracks"]['items'][0]['uri'])
-            print()
+    sp.trace = False
+    toptracks = dict()
+    for term in timespan:
+        # search by time range and limit to 5
+        results = sp.current_user_top_tracks(time_range=term, limit=5)
+        tracksList = []
+        for i, item in enumerate(results['items']):
+            tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+        toptracks[term] = tracksList
+    tracks = toptracks
+    return analyzeMusic(toptracks, 'short_term')
 
-            tids = []
-            for i, t in enumerate(results['tracks']['items']):
-                # unique track (song) id
-                tids.append(t['uri'])
+# gets medium term top tracks for user
+@app.route('/medium/<name>')
+def medium(name):
+    scope = 'user-top-read'
+    token = util.prompt_for_user_token(name, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect_uri )
+
+    sp = spotipy.Spotify(auth=token)
+    timespan = ['medium_term']
+
+    sp.trace = False
+    toptracks = dict()
+    for term in timespan:
+        results = sp.current_user_top_tracks(time_range=term, limit=5)
+        tracksList = []
+        for i, item in enumerate(results['items']):
+            tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+        toptracks[term] = tracksList
+    tracks = toptracks
+    return analyzeMusic(toptracks, 'medium_term')
+
+# gets long term top tracks for user
+@app.route('/long/<name>')
+def long(name):
+    scope = 'user-top-read'
+    token = util.prompt_for_user_token(name, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect_uri )
+
+    sp = spotipy.Spotify(auth=token)
+    timespan = ['long_term']
+
+    sp.trace = False
+    toptracks = dict()
+    for term in timespan:
+        results = sp.current_user_top_tracks(time_range=term, limit=5)
+        tracksList = []
+        for i, item in enumerate(results['items']):
+            tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+        toptracks[term] = tracksList
+    tracks = toptracks
+    return analyzeMusic(toptracks, 'long_term')
+
+# function to analyze music characteristics of songs
+def analyzeMusic(toptracks, term):
+    songWithMusicality = dict()
+    inputTerm = toptracks[term]
+    for i in range(len(inputTerm)):
+        termSplit = inputTerm[i].split('//')
+        songName = termSplit[0]
+        songArtist = termSplit[1]
+
+        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+        sp.trace=False
+
+        # this finds the song with the artist and song name
+        results = sp.search(q='artist:' + songArtist + ' track:' + songName, type='track', limit = 1)
+
+        tids = []
+        for i, t in enumerate(results['tracks']['items']):
+            # unique track (song) id
+            tids.append(t['uri'])
+
+        features = sp.audio_features(tids)
+        for feature in features:
+            # key is song name, value is musical features
+            songWithMusicality[results["tracks"]['items'][0]['name']] = feature
+            analysis = sp._get(feature['analysis_url'])
+
+    return songWithMusicality
 
 
-            features = sp.audio_features(tids)
-            for feature in features:
-                # feature contains all the musical characteristics we want
-                print(json.dumps(feature, indent=4))
-                dict[results["tracks"]['items'][0]['name']] = feature
-                analysis = sp._get(feature['analysis_url'])
+@app.route("/callback")
+def callback():
+    # Auth Step 4: Requests refresh and access tokens
+    auth_token = request.args['code']
+    code_payload = {
+        "grant_type": "authorization_code",
+        "code": str(auth_token),
+        "redirect_uri": redirect_uri,
+        'client_id': clientid,
+        'client_secret': secret,
+    }
+    post_request = requests.post("https://accounts.spotify.com/api/token", data=code_payload)
 
-            print()
-            print('*****************')
-            print()
-        return dict
+    # access token needed to use spotify api
+    response = json.loads(post_request.text)
+    print(response)
+    access_token = response["access_token"]
+    authHeader = {"Authorization": "Bearer {}".format(access_token)}
 
+    # data about profile
+    user_profile_api_endpoint = "{}/me".format("{}/{}".format("https://api.spotify.com", "v1"))
+    profiledata = requests.get(user_profile_api_endpoint, headers=authHeader)
+    userData = json.loads(profiledata.text)
+    username = userData['id']
+    print(username)
 
-def htmlForLoginButton():
-    auth_url = getSPOauthURI()
-    htmlLoginButton = "<a href='" + auth_url + "'>Login to Spotify</a>"
-    return htmlLoginButton
+    #return userData
+    #return render_template('splash.html', name = userData['display_name'])
+    #return getTopTracks(userData['id'])
+    return redirect(url_for('homepage', user = userData['id'], display = userData['display_name']))
 
-def getSPOauthURI():
-    auth_url = sp_oauth.get_authorize_url()
-    return auth_url
-
-#run(host='', port=8080)
+# run the port 8080
 if __name__ == "__main__":
     app.run(port=8080, debug=True)

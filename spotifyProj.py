@@ -4,27 +4,14 @@ import json
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
+import requests
 
-# grace's username: 22727lpkw7t7zy7p2gicvwvgy
-# nabeel: nabeelornodeal
-# christy - spotify:user:1239606975
-
-# grace
-#clientid = "4f933fc7044d44d58ab19e959b76e243"
-#secret = "325c926d068544cda714d024be6f96bd"
-
-# nabeel
+# authentication requirements
 clientid = "b68e8f328092403f8c07380df2df2351"
 secret = "b366d934eff740789e6eea7b402f0f03"
 redirect = "http://localhost:8888/callback/"
 
-# nabeel
-# export SPOTIPY_CLIENT_ID='b68e8f328092403f8c07380df2df2351'
-# export SPOTIPY_CLIENT_SECRET='b366d934eff740789e6eea7b402f0f03'
-# export SPOTIPY_REDIRECT_URI='http://localhost:8888/callback/'
-
-# class definition
-
+# user class stores top tracks and other important musical info
 class User:
 
     def __init__(self, username):
@@ -54,29 +41,25 @@ class User:
             self.toptracks[term] = tracksList
             print("")
 
-    # term can be long, med and short term
+    # term can be long, med or short term
     def analyzeMusic(self, term):
         if ((term != 'short_term') & (term != 'medium_term') & (term != 'long_term')):
             print('Term is not valid')
-        #if (!((term == 'short_term') || (term == 'medium_term') || (term == 'long_term'))):
-        #    print('Term is not valid')
-        #    sys.exit()
+            sys.exit()
         else:
             inputTerm = self.toptracks[term]
+            # separate artist and song name
             for i in range(len(inputTerm)):
                 termSplit = inputTerm[i].split('//')
                 songName = termSplit[0]
                 songArtist = termSplit[1]
- 
+
                 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
                 sp.trace=False
 
-                # results = sp.search(q=artist_name, limit=1)
                 # this finds the song with the artist and song name
                 results = sp.search(q='artist:' + songArtist + ' track:' + songName, type='track', limit = 1)
 
-                # in results['track']['items'][0].keys() --> dict_keys(['album', 'artists', 'available_markets', 'disc_number', 'duration_ms', 'explicit', 'external_ids', 'external_urls', 'href', 'id', 'is_local', 'name', 'popularity', 'preview_url', 'track_number', 'type', 'uri'])
-                #print(results["tracks"]['items']) --> gives you more info
                 print('Name of Artist: ' + results["tracks"]['items'][0]['artists'][0]['name'])
                 print('Name of Song: ' + results["tracks"]['items'][0]['name'])
                 print('Song URI: ' + results["tracks"]['items'][0]['uri'])
@@ -97,12 +80,8 @@ class User:
                 print('*****************')
                 print()
 
-
 client_credentials_manager = SpotifyClientCredentials(client_id=clientid,
                                                       client_secret=secret)
-#sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-#scope = 'user-library-read'
 
 # get user's top artists and tracks based on calculated affinity
 # does this with user behavior and play history
@@ -117,12 +96,9 @@ else:
 scope = 'user-top-read'
 token = util.prompt_for_user_token(username, scope, client_id=clientid, client_secret=secret,redirect_uri=redirect)
 
-# create a new dictionary for user's top tracks
-#toptracks = dict() #keys are term (short, long, medium)
 
 # create new user
 currUser = User(username)
-print()
 
 if token:
     #sp.trace = False
@@ -142,18 +118,14 @@ print()
 
 currUser.analyzeMusic('short_term')
 
+print('TESTING STRING FUNC')
+print(str(currUser))
 
 
 #should show the contents of every playlist owned by a user
 
 def show_tracks(tracks):
     for i, item in enumerate(tracks['items']):
-        print()
         track = item['track']
         print ((i, track['artists'][0]['name']))
         print(track['name'])
-
-#sp = spotipy.Spotify(auth=token)
-#playlists = sp.user_playlists(username)
-#print('these are ' + username + 's playlists')
-#print(playlists)

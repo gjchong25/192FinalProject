@@ -8,20 +8,27 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>Grace Chong</title>
+    <title>Spotify </title>
   </head>
 
   <body>
     <center>
       <div class="jumbotron">
-        <h1 class="display-3">Welcome!</h1>
+        <h1 class="display-3">Welcome, {{display}}!</h1>
         <p class="lead">This is a website for you to view your music preferences.</p>
         <hr class="my-4">
-        <p>Find out about your top tracks, musical features of your favorite songs, and even generate a new playlist for you!</p>
+        <p>Find out about your top tracks and view musical features of your favorite songs!</p>
         <br>
         <p class="lead">
-          <a class="btn btn-outline-success" href="success" role="button">Click here to see your top tracks.</a>
+          <a class="btn btn-outline-success" href="alltoptracks/{{name}}" role="button">Click here to see your top tracks.</a>
         </p>
+
+        <a class="btn btn-outline-success" href="short/{{name}}" role="button">Musicality of Short Term Top Tracks</a>
+        <br><br>
+        <a class="btn btn-outline-success" href="medium/{{name}}" role="button">Musicality of Medium Term Top Tracks</a>
+        <br><br>
+        <a class="btn btn-outline-success" href="long/{{name}}" role="button">Musicality of Long Term Top Tracks</a>
+
       </div>
 
 
