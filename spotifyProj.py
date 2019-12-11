@@ -30,7 +30,7 @@ class User:
                 stri += 'short term '
             elif term == 'medium_term':
                 stri += 'medium term '
-            else:
+            else: 
                 stri += 'long term '
             stri += 'tracks are: '
             for i in range(len(self.toptracks[term])- 1):
@@ -54,7 +54,7 @@ class User:
             uriList = []
             for i, item in enumerate(results['items']):
                 # song//artist -- separate by '//'
-                tracksList.append(item['name'] + "//" + item['artists'][0]['name'])
+                tracksList.append(item['name'] + " by " + item['artists'][0]['name'])
                 uriList.append(item['uri'])
                 print (str(i) + " " + item['name'] + ' // ' + item['artists'][0]['name'])
             self.toptracks[term] = tracksList
