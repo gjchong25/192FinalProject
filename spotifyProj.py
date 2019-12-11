@@ -13,15 +13,16 @@ redirect = "http://localhost:8888/callback/"
 
 # user class stores top tracks and other important musical info
 class User:
-
+    toptracks = {}
     def __init__(self, username):
         self.username = username
-        self.topTracks = {} # empty dict of top tracks (short, med, or long)
+        self.toptracks = {} # empty dict of top tracks (short, med, or long)
 
     def __str__(self):
         stri = ""
-        for i in range(len(self.topTracks)):
-            stri += self.topTracks[i] + ", "
+        for i in range(len(self.toptracks['short_term'])- 1):
+            stri += self.toptracks['short_term'][i] + ", "
+        stri += self.toptracks['short_term'][len(self.toptracks['short_term']) - 1]
         return "spotify user: " + self.username + ", spotify top tracks: " + stri + ""
 
     # term should be a list
@@ -33,6 +34,7 @@ class User:
         for term in timespan:
             print ("term: " + term)
             results = sp.current_user_top_tracks(time_range=term, limit=5)
+            #self.toptracks = results
             tracksList = []
             for i, item in enumerate(results['items']):
                 # song//artist -- separate by '//'
@@ -117,6 +119,8 @@ print('Musicality of top 5 tracks')
 print()
 
 currUser.analyzeMusic('short_term') 
+
+
 
 #should show the contents of every playlist owned by a user
 
